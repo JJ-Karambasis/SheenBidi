@@ -38,7 +38,7 @@ typedef struct _SBScriptAgent {
  * @return
  *      A reference to a script locator object.
  */
-SBScriptLocatorRef SBScriptLocatorCreate(void);
+SBScriptLocatorRef SBScriptLocatorCreate(void* mallocUserData);
 
 /**
  * Loads a code point sequence in the locator so that its script runs can be located.

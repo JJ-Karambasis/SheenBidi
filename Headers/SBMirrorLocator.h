@@ -38,7 +38,7 @@ typedef struct _SBMirrorAgent {
  * @return
  *      A reference to a mirror locator object.
  */
-SBMirrorLocatorRef SBMirrorLocatorCreate(void);
+SBMirrorLocatorRef SBMirrorLocatorCreate(void* mallocUserData);
 
 /**
  * Loads a line in the locator so that its mirror can be located.

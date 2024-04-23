@@ -45,11 +45,12 @@ typedef struct _BracketQueue {
     SBUInteger count;
     SBBoolean shouldDequeue;
     SBBidiType _direction;
+    void* mallocUserData;
 } BracketQueue, *BracketQueueRef;
 
 #define BracketQueueGetMaxCapacity()        63
 
-SB_INTERNAL void BracketQueueInitialize(BracketQueueRef queue);
+SB_INTERNAL void BracketQueueInitialize(BracketQueueRef queue, void* mallocUserData);
 SB_INTERNAL void BracketQueueReset(BracketQueueRef queue, SBBidiType direction);
 
 SB_INTERNAL SBBoolean BracketQueueEnqueue(BracketQueueRef queue,

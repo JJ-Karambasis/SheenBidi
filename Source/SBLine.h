@@ -31,6 +31,7 @@ typedef struct _SBLine {
     SBUInteger offset;
     SBUInteger length;
     SBUInteger retainCount;
+    void* mallocUserData;
 } SBLine;
 
 SB_INTERNAL SBLineRef SBLineCreate(SBParagraphRef paragraph,

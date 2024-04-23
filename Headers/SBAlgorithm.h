@@ -33,7 +33,7 @@ typedef struct _SBAlgorithm *SBAlgorithmRef;
  * @return
  *      A reference to an algorithm object if the call was successful, NULL otherwise.
  */
-SBAlgorithmRef SBAlgorithmCreate(const SBCodepointSequence *codepointSequence);
+SBAlgorithmRef SBAlgorithmCreate(const SBCodepointSequence *codepointSequence, void* MallocUserData);
 
 /**
  * Returns a direct pointer to the bidirectional types of code units, stored in the algorithm

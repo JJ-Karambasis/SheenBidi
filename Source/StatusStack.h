@@ -41,9 +41,10 @@ typedef struct _StatusStack {
     _StatusStackListRef _peekList;
     SBUInteger _peekTop;
     SBUInteger count;
+    void* mallocUserData;
 } StatusStack, *StatusStackRef;
 
-SB_INTERNAL void StatusStackInitialize(StatusStackRef stack);
+SB_INTERNAL void StatusStackInitialize(StatusStackRef stack, void* mallocUserData);
 SB_INTERNAL void StatusStackFinalize(StatusStackRef stack);
 
 SB_INTERNAL SBBoolean StatusStackPush(StatusStackRef stack,

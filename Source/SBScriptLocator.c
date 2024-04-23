@@ -32,15 +32,16 @@ static SBBoolean IsSimilarScript(SBScript lhs, SBScript rhs)
         || lhs == rhs;
 }
 
-SBScriptLocatorRef SBScriptLocatorCreate(void)
+SBScriptLocatorRef SBScriptLocatorCreate(void* mallocUserData)
 {
-    SBScriptLocatorRef locator = malloc(sizeof(SBScriptLocator));
+    SBScriptLocatorRef locator = SB_Malloc(sizeof(SBScriptLocator), mallocUserData);
 
     if (locator) {
         locator->_codepointSequence.stringEncoding = SBStringEncodingUTF8;
         locator->_codepointSequence.stringBuffer = NULL;
         locator->_codepointSequence.stringLength = 0;
         locator->retainCount = 1;
+        locator->mallocUserData = mallocUserData;
 
         SBScriptLocatorReset(locator);
     }
@@ -171,6 +172,6 @@ SBScriptLocatorRef SBScriptLocatorRetain(SBScriptLocatorRef locator)
 void SBScriptLocatorRelease(SBScriptLocatorRef locator)
 {
     if (locator && --locator->retainCount == 0) {
-        free(locator);
+        SB_Free(locator, locator->mallocUserData);
     }
 }

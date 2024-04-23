@@ -27,6 +27,7 @@ typedef struct _SBAlgorithm {
     SBCodepointSequence codepointSequence;
     SBBidiType *fixedTypes;
     SBUInteger retainCount;
+    void* mallocUserData;
 } SBAlgorithm;
 
 SB_INTERNAL SBUInteger SBAlgorithmGetSeparatorLength(SBAlgorithmRef algorithm, SBUInteger separatorIndex);

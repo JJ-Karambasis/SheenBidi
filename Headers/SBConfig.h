@@ -26,4 +26,8 @@
 #define SB_INTERNAL
 #endif
 
+#include <stdlib.h>
+#define SB_Malloc(size, user_data) ((void)(user_data), malloc(size))
+#define SB_Free(ptr, user_data) ((void)(user_data), free(ptr))
+
 #endif

@@ -16,7 +16,6 @@
 
 #include <SBConfig.h>
 #include <stddef.h>
-#include <stdlib.h>
 
 #include "LevelRun.h"
 #include "SBAssert.h"
@@ -32,7 +31,7 @@ static SBBoolean RunQueueInsertElement(RunQueueRef queue)
         RunQueueListRef rearList = previousList->next;
 
         if (!rearList) {
-            rearList = malloc(sizeof(RunQueueList));
+            rearList = SB_Malloc(sizeof(RunQueueList), queue->mallocUserData);
             if (!rearList) {
                 return SBFalse;
             }
@@ -77,7 +76,7 @@ static void FindPreviousPartialRun(RunQueueRef queue)
     queue->shouldDequeue = SBFalse;
 }
 
-SB_INTERNAL void RunQueueInitialize(RunQueueRef queue)
+SB_INTERNAL void RunQueueInitialize(RunQueueRef queue, void* mallocUserData)
 {
     /* Initialize first list. */
     queue->_firstList.previous = NULL;
@@ -97,6 +96,7 @@ SB_INTERNAL void RunQueueInitialize(RunQueueRef queue)
     queue->count = 0;
     queue->peek = &queue->_frontList->elements[queue->_frontTop];
     queue->shouldDequeue = SBFalse;
+    queue->mallocUserData = mallocUserData;
 }
 
 SB_INTERNAL SBBoolean RunQueueEnqueue(RunQueueRef queue, const LevelRunRef levelRun)
@@ -155,7 +155,7 @@ SB_INTERNAL void RunQueueFinalize(RunQueueRef queue)
 
     while (list) {
         RunQueueListRef next = list->next;
-        free(list);
+        SB_Free(list, queue->mallocUserData);
         list = next;
     };
 }

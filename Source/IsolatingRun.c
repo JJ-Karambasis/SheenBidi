@@ -471,9 +471,9 @@ static void ResolveImplicitLevels(IsolatingRunRef isolatingRun)
     }
 }
 
-SB_INTERNAL void IsolatingRunInitialize(IsolatingRunRef isolatingRun)
+SB_INTERNAL void IsolatingRunInitialize(IsolatingRunRef isolatingRun, void* mallocUserData)
 {
-    BracketQueueInitialize(&isolatingRun->_bracketQueue);
+    BracketQueueInitialize(&isolatingRun->_bracketQueue, mallocUserData);
 }
 
 SB_INTERNAL SBBoolean IsolatingRunResolve(IsolatingRunRef isolatingRun)

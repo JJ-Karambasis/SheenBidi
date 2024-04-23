@@ -22,13 +22,14 @@
 #include "SBLine.h"
 #include "SBMirrorLocator.h"
 
-SBMirrorLocatorRef SBMirrorLocatorCreate(void)
+SBMirrorLocatorRef SBMirrorLocatorCreate(void* mallocUserData)
 {
-    SBMirrorLocatorRef locator = malloc(sizeof(SBMirrorLocator));
+    SBMirrorLocatorRef locator = SB_Malloc(sizeof(SBMirrorLocator), mallocUserData);
 
     if (locator) {
         locator->_line = NULL;
         locator->retainCount = 1;
+        locator->mallocUserData = mallocUserData;
 
         SBMirrorLocatorReset(locator);
     }
@@ -118,6 +119,6 @@ void SBMirrorLocatorRelease(SBMirrorLocatorRef locator)
 {
     if (locator && --locator->retainCount == 0) {
         SBLineRelease(locator->_line);
-        free(locator);
+        SB_Free(locator, locator->mallocUserData);
     }
 }

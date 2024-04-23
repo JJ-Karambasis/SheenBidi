@@ -42,14 +42,14 @@ typedef struct _ParagraphContext {
 static void PopulateBidiChain(BidiChainRef chain, const SBBidiType *types, SBUInteger length);
 static SBBoolean ProcessRun(ParagraphContextRef context, const LevelRunRef levelRun, SBBoolean forceFinish);
 
-static ParagraphContextRef CreateParagraphContext(const SBBidiType *types, SBLevel *levels, SBUInteger length)
+static ParagraphContextRef CreateParagraphContext(const SBBidiType *types, SBLevel *levels, SBUInteger length, void* mallocUserData)
 {
     const SBUInteger sizeContext = sizeof(ParagraphContext);
     const SBUInteger sizeLinks   = sizeof(BidiLink) * (length + 2);
     const SBUInteger sizeTypes   = sizeof(SBBidiType) * (length + 2);
     const SBUInteger sizeMemory  = sizeContext + sizeLinks + sizeTypes;
 
-    void *pointer = malloc(sizeMemory);
+    void *pointer = SB_Malloc(sizeMemory, mallocUserData);
 
     if (pointer) {
         const SBUInteger offsetContext = 0;
@@ -62,9 +62,9 @@ static ParagraphContextRef CreateParagraphContext(const SBBidiType *types, SBLev
         SBBidiType *fixedTypes = (SBBidiType *)(memory + offsetTypes);
 
         BidiChainInitialize(&context->bidiChain, fixedTypes, levels, fixedLinks);
-        StatusStackInitialize(&context->statusStack);
-        RunQueueInitialize(&context->runQueue);
-        IsolatingRunInitialize(&context->isolatingRun);
+        StatusStackInitialize(&context->statusStack, mallocUserData);
+        RunQueueInitialize(&context->runQueue, mallocUserData);
+        IsolatingRunInitialize(&context->isolatingRun, mallocUserData);
 
         PopulateBidiChain(&context->bidiChain, types, length);
 
@@ -74,21 +74,21 @@ static ParagraphContextRef CreateParagraphContext(const SBBidiType *types, SBLev
     return NULL;
 }
 
-static void DisposeParagraphContext(ParagraphContextRef context)
+static void DisposeParagraphContext(ParagraphContextRef context, void* mallocUserData)
 {
     StatusStackFinalize(&context->statusStack);
     RunQueueFinalize(&context->runQueue);
     IsolatingRunFinalize(&context->isolatingRun);
-    free(context);
+    SB_Free(context, mallocUserData);
 }
 
-static SBParagraphRef AllocateParagraph(SBUInteger length)
+static SBParagraphRef AllocateParagraph(SBUInteger length, void* mallocUserData)
 {
     const SBUInteger sizeParagraph = sizeof(SBParagraph);
     const SBUInteger sizeLevels    = sizeof(SBLevel) * (length + 2);
     const SBUInteger sizeMemory    = sizeParagraph + sizeLevels;
 
-    void *pointer = malloc(sizeMemory);
+    void *pointer = SB_Malloc(sizeMemory, mallocUserData);
 
     if (pointer) {
         const SBUInteger offsetParagraph = 0;
@@ -99,6 +99,7 @@ static SBParagraphRef AllocateParagraph(SBUInteger length)
         SBLevel *levels = (SBLevel *)(memory + offsetLevels);
 
         paragraph->fixedLevels = levels;
+        paragraph->mallocUserData = mallocUserData;
 
         return paragraph;
     }
@@ -108,7 +109,7 @@ static SBParagraphRef AllocateParagraph(SBUInteger length)
 
 static void DisposeParagraph(SBParagraphRef paragraph)
 {
-    free(paragraph);
+    SB_Free(paragraph, paragraph->mallocUserData);
 }
 
 static SBUInteger DetermineBoundary(SBAlgorithmRef algorithm, SBUInteger paragraphOffset, SBUInteger suggestedLength)
@@ -573,7 +574,7 @@ static SBBoolean ResolveParagraph(SBParagraphRef paragraph,
     ParagraphContextRef context;
     SBLevel resolvedLevel;
 
-    context = CreateParagraphContext(bidiTypes, paragraph->fixedLevels, length);
+    context = CreateParagraphContext(bidiTypes, paragraph->fixedLevels, length, algorithm->mallocUserData);
 
     if (context) {
         resolvedLevel = DetermineParagraphLevel(&context->bidiChain, baseLevel);
@@ -605,7 +606,7 @@ static SBBoolean ResolveParagraph(SBParagraphRef paragraph,
             isSucceeded = SBTrue;
         }
 
-        DisposeParagraphContext(context);
+        DisposeParagraphContext(context, algorithm->mallocUserData);
     }
 
     return isSucceeded;
@@ -635,7 +636,7 @@ SB_INTERNAL SBParagraphRef SBParagraphCreate(SBAlgorithmRef algorithm,
     SB_LOG_STATEMENT("Actual Length", 1, SB_LOG_NUMBER(actualLength));
     SB_LOG_BLOCK_CLOSER();
 
-    paragraph = AllocateParagraph(actualLength);
+    paragraph = AllocateParagraph(actualLength, algorithm->mallocUserData);
 
     if (paragraph) {
         if (ResolveParagraph(paragraph, algorithm, paragraphOffset, actualLength, baseLevel)) {

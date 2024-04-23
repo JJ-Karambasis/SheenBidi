@@ -59,13 +59,13 @@ static SBLevel CopyLevels(SBLevel *destination,
     return maxLevel;
 }
 
-static LineContextRef CreateLineContext(const SBBidiType *types, const SBLevel *levels, SBUInteger length)
+static LineContextRef CreateLineContext(const SBBidiType *types, const SBLevel *levels, SBUInteger length, void* mallocUserData)
 {
     const SBUInteger sizeContext = sizeof(LineContext);
     const SBUInteger sizeLevels  = sizeof(SBLevel) * length;
     const SBUInteger sizeMemory  = sizeContext + sizeLevels;
 
-    void *pointer = malloc(sizeMemory);
+    void *pointer = SB_Malloc(sizeMemory, mallocUserData);
 
     if (pointer) {
         const SBUInteger offsetContext = 0;
@@ -85,18 +85,18 @@ static LineContextRef CreateLineContext(const SBBidiType *types, const SBLevel *
     return NULL;
 }
 
-static void DisposeLineContext(LineContextRef context)
+static void DisposeLineContext(LineContextRef context, void* mallocUserData)
 {
-    free(context);
+    SB_Free(context, mallocUserData);
 }
 
-static SBLineRef AllocateLine(SBUInteger runCount)
+static SBLineRef AllocateLine(SBUInteger runCount, void* mallocUserData)
 {
     const SBUInteger sizeLine   = sizeof(SBLine);
     const SBUInteger sizeRuns   = sizeof(SBRun) * runCount;
     const SBUInteger sizeMemory = sizeLine + sizeRuns;
 
-    void *pointer = malloc(sizeMemory);
+    void *pointer = SB_Malloc(sizeMemory, mallocUserData);
 
     if (pointer) {
         const SBUInteger offsetLine = 0;
@@ -107,6 +107,7 @@ static SBLineRef AllocateLine(SBUInteger runCount)
         SBRun *runs = (SBRun *)(memory + offsetRuns);
 
         line->fixedRuns = runs;
+        line->mallocUserData = mallocUserData;
 
         return line;
     }
@@ -258,12 +259,12 @@ SB_INTERNAL SBLineRef SBLineCreate(SBParagraphRef paragraph,
              && lineOffset >= paragraph->offset
              && (lineOffset + lineLength) <= (paragraph->offset + paragraph->length));
 
-    context = CreateLineContext(refTypes, refLevels, lineLength);
+    context = CreateLineContext(refTypes, refLevels, lineLength, paragraph->mallocUserData);
 
     if (context) {
         ResetLevels(context, paragraph->baseLevel, lineLength);
 
-        line = AllocateLine(context->runCount);
+        line = AllocateLine(context->runCount, paragraph->mallocUserData);
 
         if (line) {
             line->runCount = InitializeRuns(line->fixedRuns, context->fixedLevels, lineLength, lineOffset);
@@ -275,7 +276,7 @@ SB_INTERNAL SBLineRef SBLineCreate(SBParagraphRef paragraph,
             line->retainCount = 1;
         }
 
-        DisposeLineContext(context);
+        DisposeLineContext(context, paragraph->mallocUserData);
 
         return line;
     }
@@ -315,6 +316,6 @@ SBLineRef SBLineRetain(SBLineRef line)
 void SBLineRelease(SBLineRef line)
 {
     if (line && --line->retainCount == 0) {
-        free(line);
+        SB_Free(line, line->mallocUserData);
     }
 }

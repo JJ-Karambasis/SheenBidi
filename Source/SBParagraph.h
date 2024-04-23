@@ -30,6 +30,7 @@ typedef struct _SBParagraph {
     SBUInteger length;
     SBLevel baseLevel;
     SBUInteger retainCount;
+    void* mallocUserData;
 } SBParagraph;
 
 SB_INTERNAL SBParagraphRef SBParagraphCreate(SBAlgorithmRef algorithm,

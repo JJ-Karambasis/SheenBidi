@@ -28,6 +28,7 @@ typedef struct _SBScriptLocator {
     ScriptStack _scriptStack;
     SBScriptAgent agent;
     SBUInteger retainCount;
+    void* mallocUserData;
 } SBScriptLocator;
 
 #endif

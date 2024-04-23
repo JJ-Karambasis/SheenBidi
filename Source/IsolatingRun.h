@@ -39,7 +39,7 @@ typedef struct _IsolatingRun {
     SBLevel paragraphLevel;
 } IsolatingRun, *IsolatingRunRef;
 
-SB_INTERNAL void IsolatingRunInitialize(IsolatingRunRef isolatingRun);
+SB_INTERNAL void IsolatingRunInitialize(IsolatingRunRef isolatingRun, void* mallocUserData);
 SB_INTERNAL SBBoolean IsolatingRunResolve(IsolatingRunRef isolatingRun);
 
 SB_INTERNAL void IsolatingRunFinalize(IsolatingRunRef isolatingRun);

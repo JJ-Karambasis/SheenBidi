@@ -31,7 +31,7 @@ static SBBoolean StatusStackInsertElement(StatusStackRef stack)
         _StatusStackListRef peekList = previousList->next;
 
         if (!peekList) {
-            peekList = malloc(sizeof(_StatusStackList));
+            peekList = SB_Malloc(sizeof(_StatusStackList), stack->mallocUserData);
             if (!peekList) {
                 return SBFalse;
             }
@@ -50,10 +50,11 @@ static SBBoolean StatusStackInsertElement(StatusStackRef stack)
     return SBTrue;
 }
 
-SB_INTERNAL void StatusStackInitialize(StatusStackRef stack)
+SB_INTERNAL void StatusStackInitialize(StatusStackRef stack, void* mallocUserData)
 {
     stack->_firstList.previous = NULL;
     stack->_firstList.next = NULL;
+    stack->mallocUserData = mallocUserData;
     
     StatusStackSetEmpty(stack);
 }
@@ -118,7 +119,7 @@ SB_INTERNAL void StatusStackFinalize(StatusStackRef stack)
 
     while (list) {
         _StatusStackListRef next = list->next;
-        free(list);
+        SB_Free(list, stack->mallocUserData);
         list = next;
     };
 }

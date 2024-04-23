@@ -25,13 +25,13 @@
 #include "SBParagraph.h"
 #include "SBAlgorithm.h"
 
-static SBAlgorithmRef AllocateAlgorithm(SBUInteger stringLength)
+static SBAlgorithmRef AllocateAlgorithm(SBUInteger stringLength, void* mallocUserData)
 {
     const SBUInteger sizeAlgorithm = sizeof(SBAlgorithm);
     const SBUInteger sizeTypes     = sizeof(SBBidiType) * stringLength;
     const SBUInteger sizeMemory    = sizeAlgorithm + sizeTypes;
 
-    void *pointer = malloc(sizeMemory);
+    void *pointer = SB_Malloc(sizeMemory, mallocUserData);
 
     if (pointer) {
         const SBUInteger offsetAlgorithm = 0;
@@ -42,6 +42,7 @@ static SBAlgorithmRef AllocateAlgorithm(SBUInteger stringLength)
         SBLevel *fixedTypes = (SBLevel *)(memory + offsetTypes);
 
         algorithm->fixedTypes = fixedTypes;
+        algorithm->mallocUserData = mallocUserData;
 
         return algorithm;
     }
@@ -51,7 +52,7 @@ static SBAlgorithmRef AllocateAlgorithm(SBUInteger stringLength)
 
 static void DisposeAlgorithm(SBAlgorithmRef algorithm)
 {
-    free(algorithm);
+    SB_Free(algorithm, algorithm->mallocUserData);
 }
 
 static void DetermineBidiTypes(const SBCodepointSequence *sequence, SBBidiType *types)
@@ -70,7 +71,7 @@ static void DetermineBidiTypes(const SBCodepointSequence *sequence, SBBidiType *
     }
 }
 
-static SBAlgorithmRef CreateAlgorithm(const SBCodepointSequence *codepointSequence)
+static SBAlgorithmRef CreateAlgorithm(const SBCodepointSequence *codepointSequence, void* mallocUserData)
 {
     SBUInteger stringLength = codepointSequence->stringLength;
     SBAlgorithmRef algorithm;
@@ -79,7 +80,7 @@ static SBAlgorithmRef CreateAlgorithm(const SBCodepointSequence *codepointSequen
     SB_LOG_STATEMENT("Codepoints", 1, SB_LOG_CODEPOINT_SEQUENCE(codepointSequence));
     SB_LOG_BLOCK_CLOSER();
 
-    algorithm = AllocateAlgorithm(stringLength);
+    algorithm = AllocateAlgorithm(stringLength, mallocUserData);
 
     if (algorithm) {
         algorithm->codepointSequence = *codepointSequence;
@@ -97,10 +98,10 @@ static SBAlgorithmRef CreateAlgorithm(const SBCodepointSequence *codepointSequen
     return algorithm;
 }
 
-SBAlgorithmRef SBAlgorithmCreate(const SBCodepointSequence *codepointSequence)
+SBAlgorithmRef SBAlgorithmCreate(const SBCodepointSequence *codepointSequence, void* mallocUserData)
 {
     if (SBCodepointSequenceIsValid(codepointSequence)) {
-        return CreateAlgorithm(codepointSequence);
+        return CreateAlgorithm(codepointSequence, mallocUserData);
     }
 
     return NULL;

@@ -32,7 +32,7 @@ static SBBoolean BracketQueueInsertElement(BracketQueueRef queue)
         BracketQueueListRef rearList = previousList->next;
 
         if (!rearList) {
-            rearList = malloc(sizeof(BracketQueueList));
+            rearList = SB_Malloc(sizeof(BracketQueueList), queue->mallocUserData);
             if (!rearList) {
                 return SBFalse;
             }
@@ -68,7 +68,7 @@ static void BracketQueueFinalizePairs(BracketQueueRef queue, BracketQueueListRef
     } while (list);
 }
 
-SB_INTERNAL void BracketQueueInitialize(BracketQueueRef queue)
+SB_INTERNAL void BracketQueueInitialize(BracketQueueRef queue, void* mallocUserData)
 {
     queue->_firstList.previous = NULL;
     queue->_firstList.next = NULL;
@@ -76,6 +76,7 @@ SB_INTERNAL void BracketQueueInitialize(BracketQueueRef queue)
     queue->_rearList = NULL;
     queue->count = 0;
     queue->shouldDequeue = SBFalse;
+    queue->mallocUserData = mallocUserData;
 }
 
 SB_INTERNAL void BracketQueueReset(BracketQueueRef queue, SBBidiType direction)
@@ -236,7 +237,7 @@ SB_INTERNAL void BracketQueueFinalize(BracketQueueRef queue)
 
     while (list) {
         BracketQueueListRef next = list->next;
-        free(list);
+        SB_Free(list, queue->mallocUserData);
         list = next;
     }
 }

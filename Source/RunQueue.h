@@ -43,9 +43,10 @@ typedef struct _RunQueue {
     LevelRunRef peek;               /**< Peek element of the queue */
     SBUInteger count;               /**< Number of elements the queue contains */
     SBBoolean shouldDequeue;
+    void* mallocUserData;
 } RunQueue, *RunQueueRef;
 
-SB_INTERNAL void RunQueueInitialize(RunQueueRef queue);
+SB_INTERNAL void RunQueueInitialize(RunQueueRef queue, void* mallocUserData);
 
 SB_INTERNAL SBBoolean RunQueueEnqueue(RunQueueRef queue, const LevelRunRef levelRun);
 SB_INTERNAL void RunQueueDequeue(RunQueueRef queue);

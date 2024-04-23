@@ -27,6 +27,7 @@ typedef struct _SBMirrorLocator {
     SBUInteger _stringIndex;
     SBMirrorAgent agent;
     SBUInteger retainCount;
+    void* mallocUserData;
 } SBMirrorLocator;
 
 #endif
